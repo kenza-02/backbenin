@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>API  Test</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px}
+    fieldset{margin-bottom:18px;padding:12px}
+    label{display:block;margin:6px 0}
+    input[type=text],input[type=number],textarea{width:100%;max-width:600px;padding:6px}
+    .row{display:flex;gap:12px}
+    .row > *{flex:1}
+    button{margin-top:8px}
+    .links a{display:inline-block;margin-right:8px}
+  </style>
+</head>
+<body>
+  <h1>API  Test</h1>
+  <p>Vérification des tables et de la gestions</p>
+
+  <script>
+    const baseUrl = 'http://127.0.0.1:8000';
+    function openUrl(path){ window.open(baseUrl+path, '_blank'); }
+    async function submitForm(event, endpoint){
+      event.preventDefault();
+      const form = event.target;
+      form.style.opacity = '0.5';
+      form.querySelector('button[type="submit"]').disabled = true;
+      
+      const fd = new FormData(form);
+      const method = (form.querySelector('input[name="_method"]')||{value:'POST'}).value || 'POST';
+      const url = baseUrl + endpoint;
+      const opts = { method: method.toUpperCase(), body: fd };
+      
+      try {
+        const res = await fetch(url, opts);
+        const text = await res.text();
+        alert('Status: '+res.status+'\n\n'+text);
+        
+        if(res.status === 201 || res.status === 200) {
+          form.reset();
+        }
+      } catch(err) {
+        alert('Erreur: '+err.message);
+      } finally {
+        form.style.opacity = '1';
+        form.querySelector('button[type="submit"]').disabled = false;
+      }
+    }
+  </script>
+  <script>
+    
+fetch('/api/intervenants')
+  .then(res => res.json())
+  .then(data => {
+    const select = document.querySelector('select[name="intervenants[]"]');
+
+    data.forEach(intervenant => {
+      const option = document.createElement('option');
+      option.value = intervenant.id;
+      option.textContent = intervenant.prenom + ' ' + intervenant.nom;
+      select.appendChild(option);
+    });
+  });
+</script>
+
+  
+
+  <div class="links">
+    <strong>Tables:</strong>
+    <a href="#" onclick="openUrl('/api/categories')">Categories</a>
+    <a href="#" onclick="openUrl('/api/documents')">Documents</a>
+    <a href="#" onclick="openUrl('/api/podcasts')">Podcasts</a>
+    <a href="#" onclick="openUrl('/api/evenements')">Evenements</a>
+    <a href="#" onclick="openUrl('/api/membres')">Membres</a>
+    <a href="#" onclick="openUrl('/api/intervenants')">Intervenants</a>
+    <a href="#" onclick="openUrl('/api/dashboard')">Dashboard</a>
+    <a href="#" onclick="openUrl('/api/evenement-intervenants')">Evenement Intervenants</a>
+  </div>
+
+  <fieldset>
+    <legend>Créer catégorie</legend>
+    <form onsubmit="submitForm(event, '/api/categories')" method="post">
+      <label>Libellé<input name="libelle" required></label>
+      <button type="submit">Créer catégorie</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Créer membre</legend>
+    <form onsubmit="submitForm(event, '/api/membres')" method="post">
+      <div class="row">
+        <label>Prénom<input name="prenom" required></label>
+        <label>Nom<input name="nom" required></label>
+       <label>Lien Photo
+    <input type="url" name="lien_photo" placeholder="https://exemple.com/image.jpg">
+</label>
+
+      </div>
+      <button type="submit">Créer membre</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Créer intervenant</legend>
+    <form onsubmit="submitForm(event, '/api/intervenants')" method="post">
+      <div class="row">
+        <label>Prénom<input name="prenom" required></label>
+        <label>Nom<input name="nom" required></label>
+        <label>Sexe<input name="sexe" placeholder="M/F"></label>
+      </div>
+      <button type="submit">Créer intervenant</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Créer document (upload)</legend>
+    <form onsubmit="submitForm(event, '/api/documents')" method="post" enctype="multipart/form-data">
+      <label>Libellé<input name="libelle" required></label>
+      <label>Description<textarea name="description"></textarea></label>
+      <div class="row">
+        <label>Catégorie ID<input name="categorie_id" type="number" value="1" required></label>
+        <label>Fichier<input name="fichier" type="file" accept=".pdf,.doc,.docx,.txt" required></label>
+      </div>
+      <button type="submit">Créer document</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Créer podcast (upload audio)</legend>
+    <form onsubmit="submitForm(event, '/api/podcasts')" method="post" enctype="multipart/form-data">
+      <label>Libellé<input name="libelle" required></label>
+      <label>Description<textarea name="description"></textarea></label>
+      <div class="row">
+        <label>Membre ID<input name="membre_id" type="number" value="1" required></label>
+        <label>Catégorie ID<input name="categorie_id" type="number" value="1" required></label>
+      </div>
+      <label>Fichier audio<input name="fichier" type="file" accept="audio/*" required></label>
+      <button type="submit">Créer podcast</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Créer événement (upload image)</legend>
+    <form onsubmit="submitForm(event, '/api/evenements')" method="post" enctype="multipart/form-data">
+      <label>Libellé<input name="libelle" required></label>
+      <label>Description<textarea name="description" required></textarea></label>
+      <div class="row">
+        <label>Date début<input name="date_debut" type="text" required></label>
+        <label>Date fin<input name="date_fin" type="text" required></label>
+      </div>
+      <label>Intervenants</label>
+<select name="intervenants[]" multiple size="5">
+  <!-- Les options seront injectées en JS -->
+</select>
+
+      <div class="row">
+        <label>Heure début<input name="heure_debut" type="text" required></label>
+        <label>Heure fin<input name="heure_fin" type="text" required></label>
+      </div>
+      <div class="row">
+        <label>Type<input name="type" required></label>
+        <label>Lieu<input name="lieu"></label>
+      </div>
+      <label>Lien<input name="lien"></label>
+      <label>Image<input name="image" type="file" accept="image/*"></label>
+      <button type="submit">Créer événement</button>
+    </form>
+  </fieldset>
+
+  
+</body>
+</html>
