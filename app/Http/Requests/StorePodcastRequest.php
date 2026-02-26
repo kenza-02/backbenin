@@ -18,7 +18,7 @@ class StorePodcastRequest extends FormRequest
             'description' => 'nullable|string',
             'membre_id' => 'required|exists:sn_membres,id',
             'categorie_id' => 'required|exists:sn_categories,id',
-            'fichier' => 'required|file|mimes:mp3,wav,m4a,ogg', // 50MB
+            'fichier' => 'required|file|mimes:mp3,mp4,avi,mov,wav,m4a,ogg', 
         ];
     }
 
