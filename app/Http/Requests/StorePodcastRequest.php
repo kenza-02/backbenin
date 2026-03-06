@@ -18,7 +18,7 @@ class StorePodcastRequest extends FormRequest
             'description' => 'nullable|string',
             'membre_id' => 'required|exists:sn_membres,id',
             'categorie_id' => 'required|exists:sn_categories,id',
-            'fichier' => 'required|file|mimes:mp3,mp4,avi,mov,wav,m4a,ogg', 
+            'fichier' => 'required|file|mimes:mp3,wav,m4a,ogg,mp4,webm,mov,m4v|max:104857600',
         ];
     }
 
@@ -31,7 +31,7 @@ class StorePodcastRequest extends FormRequest
             'categorie_id.required' => 'La catégorie est obligatoire',
             'categorie_id.exists' => 'La catégorie sélectionnée n\'existe pas',
             'fichier.required' => 'Le fichier audio est obligatoire',
-            'fichier.mimes' => 'Le fichier doit être au format MP3, WAV, M4A ou OGG',
+            'fichier.max' => 'Le fichier ne doit pas dépasser 100 MB',
            
         ];
     }

@@ -2,35 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\Intervenant; 
-$evenement->intervenants()->attach($intervenantIds); 
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Evenement extends Model
+class EvenementIntervenant extends Pivot
 {
-    protected $table = 'sn_evenements';
+    protected $table = 'sn_evenement_intervenant';
 
     protected $fillable = [
-        'libelle',
-        'description',
-        'date_debut',
-        'date_fin',
-        'heure_debut',
-        'heure_fin',
-        'type',
-        'lieu',
-        'lien',
-        'image'
+        'evenement_id',
+        'intervenant_id',
     ];
-
-    public function intervenants()
-    {
-        return $this->belongsToMany(
-            Intervenant::class,
-            'sn_evenement_intervenant', 
-            'evenement', 
-            'intervenant' 
-        );
-    }
-    
 }

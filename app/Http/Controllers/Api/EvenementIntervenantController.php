@@ -14,13 +14,13 @@ class EvenementIntervenantController extends Controller
                 'sn_evenements',
                 'sn_evenements.id',
                 '=',
-                'sn_evenement_intervenant.evenement'
+                'sn_evenement_intervenant.evenement_id'
             )
             ->join(
                 'sn_intervenants',
                 'sn_intervenants.id',
                 '=',
-                'sn_evenement_intervenant.intervenant'
+                'sn_evenement_intervenant.intervenant_id'
             )
             ->select(
                 'sn_evenement_intervenant.id',
@@ -49,8 +49,8 @@ class EvenementIntervenantController extends Controller
 
     foreach ($intervenantIds as $id) {
         DB::table('sn_evenement_intervenant')->insert([
-            'evenement' => $evenementId,
-            'intervenant' => $id,
+            'evenement_id' => $evenementId,
+            'intervenant_id' => $id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
