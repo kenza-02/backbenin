@@ -20,8 +20,8 @@ class Intervenant extends Model
         return $this->belongsToMany(
             Evenement::class,
             'sn_evenement_intervenant',
-            'intervenant',
-            'evenement'
+            'intervenant_id',
+            'evenement_id'
           )->withTimestamps();
     }
 }
