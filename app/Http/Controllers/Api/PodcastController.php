@@ -79,19 +79,63 @@ class PodcastController extends Controller
         return Storage::disk('public')->download($podcast->fichier);
     }
 
-    //  pour streamer un podcast 
-    public function stream($id)
+    //  pour streamer un podcast avec support Range Requests et CORS
+    public function stream(Request $request, $id)
     {
         $podcast = Podcast::findOrFail($id);
 
         if (!$podcast->fichier || !Storage::disk('public')->exists($podcast->fichier)) {
-            return response()->json(['message' => 'Fichier audio non trouvé'], 404);
+            return response()->json(['message' => 'Fichier non trouvé'], 404);
         }
 
-        return response()->file(
-            Storage::disk('public')->path($podcast->fichier),
-            ['Content-Type' => 'audio/mpeg']
-        );
+        $path     = Storage::disk('public')->path($podcast->fichier);
+        $mimeType = mime_content_type($path) ?: 'application/octet-stream';
+        $fileSize = filesize($path);
+
+        $headers = [
+            'Content-Type'                 => $mimeType,
+            'Accept-Ranges'                => 'bytes',
+            'Access-Control-Allow-Origin'  => '*',
+            'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Range, Content-Type',
+        ];
+
+        // Gestion des Range Requests (nécessaire pour le seek vidéo dans le navigateur)
+        if ($request->hasHeader('Range')) {
+            $range = $request->header('Range');
+            preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
+
+            $start  = (int) $matches[1];
+            $end    = (isset($matches[2]) && $matches[2] !== '') ? (int) $matches[2] : $fileSize - 1;
+            $length = $end - $start + 1;
+
+            $headers['Content-Range']  = "bytes {$start}-{$end}/{$fileSize}";
+            $headers['Content-Length'] = $length;
+
+            return response()->stream(function () use ($path, $start, $length) {
+                $stream = fopen($path, 'rb');
+                fseek($stream, $start);
+                $remaining = $length;
+                while (!feof($stream) && $remaining > 0) {
+                    $chunk = min(8192, $remaining);
+                    echo fread($stream, $chunk);
+                    $remaining -= $chunk;
+                    flush();
+                }
+                fclose($stream);
+            }, 206, $headers);
+        }
+
+        $headers['Content-Length'] = $fileSize;
+
+        return response()->stream(function () use ($path) {
+            $stream = fopen($path, 'rb');
+            while (!feof($stream)) {
+                echo fread($stream, 8192);
+                flush();
+            }
+            fclose($stream);
+        }, 200, $headers);
     }
     //affichage de 8 podcasts
     public function lastPodcasts()
